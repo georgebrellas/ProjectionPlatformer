@@ -13,6 +13,7 @@ public class Control : MonoBehaviour
     private Rigidbody2D PlayerRigid;
     private SpriteAnim Anim;
     private SpriteRenderer PlayerRenderer;
+    private float AnimSpeed;
 
     //Our Direction Colliders
     private CollisionScript Left;
@@ -23,11 +24,14 @@ public class Control : MonoBehaviour
     public KeyCode LeftButton;
     public KeyCode RightButton;
     public KeyCode JumpButton;
+    public KeyCode SprintButton;
 
     //Movement Speed and Jumping Force
     //different because jumping is done by applying force, movement is only a velocity change.
-    public float MovementSpeed;
+    public float SetSpeed;
+    public float SprintBoost;
     public float JumpForce;
+    private float MovementSpeed;
 
     //Fairly self explanatory, our 'default' (Idle) sprite and our jumping sprite.
     public Sprite JumpSprite;
@@ -41,14 +45,17 @@ public class Control : MonoBehaviour
     private bool MovementActive;
     private bool LeftMovementActive;
     private bool RightMovementActive;
+    private bool Sprint;
 
     // Start is called before the first frame update
     void Start()
     {
         CanJump = true;
+        MovementSpeed = SetSpeed;
         PlayerRigid = Player.GetComponent<Rigidbody2D>();
         Anim = Player.GetComponent<SpriteAnim>();
         PlayerRenderer = Player.GetComponent<SpriteRenderer>();
+        AnimSpeed = 0.05f;
 
         // Direction colliders.
         Left = Player.transform.GetChild(0).GetComponent<CollisionScript>();
@@ -59,14 +66,34 @@ public class Control : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetKeyDown(SprintButton))
+        {
+            MovementSpeed = SetSpeed + SprintBoost;
+            if (WalkAnimActive)
+            {
+                Anim.StopAnimation();
+                Anim.PlayAnimation(0, 0.03f);
+            }
+        }
         
+        if (Input.GetKeyUp(SprintButton))
+        {
+            MovementSpeed = SetSpeed;
+
+            if (WalkAnimActive)
+            {
+                Anim.StopAnimation();
+                Anim.PlayAnimation(0, AnimSpeed);
+            }
+        }
+
         PlayerRigid.velocity = new Vector2(Mathf.Clamp(PlayerRigid.velocity.x, -MovementSpeed, MovementSpeed), Mathf.Clamp(PlayerRigid.velocity.y, -JumpForce, JumpForce));
         
         if (Input.GetKeyDown(LeftButton) || Input.GetKeyDown(RightButton))
         {
             if (WalkAnimActive)
             {
-                Anim.PlayAnimation(0, 0.05f);
+                Anim.PlayAnimation(0, AnimSpeed);
             }
         }
         if (Input.GetKey(LeftButton))
@@ -166,7 +193,7 @@ public class Control : MonoBehaviour
             {
                 if (LeftKeyActive || RightKeyActive)
                 {
-                    Anim.PlayAnimation(0, 0.05f);
+                    Anim.PlayAnimation(0, AnimSpeed);
                 }
                 MovementActive = true;
                 WalkAnimActive = true;

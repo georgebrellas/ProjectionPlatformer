@@ -1647,7 +1647,9 @@ MonoBehaviour:
   LeftButton: 97
   RightButton: 100
   JumpButton: 32
-  MovementSpeed: 2
+  SprintButton: 304
+  SetSpeed: 2
+  SprintBoost: 0.5
   JumpForce: 200
   JumpSprite: {fileID: 21300000, guid: 9b6901b76508a6047840f7d9dc929603, type: 3}
   NormalSprite: {fileID: 21300000, guid: b3829554d2e94a34d8b46108cf482535, type: 3}
