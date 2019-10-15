@@ -11,8 +11,15 @@ public class Control : MonoBehaviour
     //Our Player
     public GameObject Player;
     private Rigidbody2D PlayerRigid;
+    private SpriteAnim Anim;
+    private SpriteRenderer PlayerRenderer;
 
-    //Our Keys as variables so they can be changed (Maybe in game menu?)
+    //Our Direction Colliders
+    private CollisionScript Left;
+    private CollisionScript Right;
+    private CollisionScript Up;
+
+    //Our Keys as variables so they can be changed (Maybe an in-game menu?)
     public KeyCode LeftButton;
     public KeyCode RightButton;
     public KeyCode JumpButton;
@@ -32,50 +39,58 @@ public class Control : MonoBehaviour
     private bool LeftKeyActive;
     private bool RightKeyActive;
     private bool MovementActive;
+    private bool LeftMovementActive;
+    private bool RightMovementActive;
 
     // Start is called before the first frame update
     void Start()
     {
         CanJump = true;
         PlayerRigid = Player.GetComponent<Rigidbody2D>();
+        Anim = Player.GetComponent<SpriteAnim>();
+        PlayerRenderer = Player.GetComponent<SpriteRenderer>();
+
+        // Direction colliders.
+        Left = Player.transform.GetChild(0).GetComponent<CollisionScript>();
+        Right = Player.transform.GetChild(1).GetComponent<CollisionScript>();
+        Up = Player.transform.GetChild(2).GetComponent<CollisionScript>();
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        
         PlayerRigid.velocity = new Vector2(Mathf.Clamp(PlayerRigid.velocity.x, -MovementSpeed, MovementSpeed), Mathf.Clamp(PlayerRigid.velocity.y, -JumpForce, JumpForce));
- 
+        
         if (Input.GetKeyDown(LeftButton) || Input.GetKeyDown(RightButton))
         {
             if (WalkAnimActive)
             {
-                Player.GetComponent<SpriteAnim>().PlayAnimation(0, 0.05f);
+                Anim.PlayAnimation(0, 0.05f);
             }
         }
-
         if (Input.GetKey(LeftButton))
         {
-            if (MovementActive)
+            LeftKeyActive = true;
+            if (MovementActive && LeftMovementActive)
             {
-                LeftKeyActive = true;
                 PlayerRigid.velocity = new Vector2(-MovementSpeed, PlayerRigid.velocity.y);
             }
 
             //Flips the sprite so that it reflects the direction the player is facing.
-            Player.GetComponent<SpriteRenderer>().flipX = true;
+            PlayerRenderer.flipX = true;
         }
         
         if (Input.GetKey(RightButton))
         {
-            if (MovementActive)
+            RightKeyActive = true;
+            if (MovementActive && RightMovementActive)
             {
-                RightKeyActive = true;
                 PlayerRigid.velocity = new Vector2(MovementSpeed, PlayerRigid.velocity.y);
             }
 
             //Flips the sprite so that it reflects the direction the player is facing.
-            Player.GetComponent<SpriteRenderer>().flipX = false;
+            PlayerRenderer.flipX = false;
         }
 
 
@@ -86,7 +101,7 @@ public class Control : MonoBehaviour
 
             if (CanJump)
             {
-                Player.GetComponent<SpriteRenderer>().sprite = NormalSprite;
+                PlayerRenderer.sprite = NormalSprite;
             }
 
         }
@@ -99,26 +114,36 @@ public class Control : MonoBehaviour
         if (Input.GetKeyUp(RightButton))
         {
             RightKeyActive = false;
-
-            if (WalkAnimActive)
-            {
-                Player.GetComponent<SpriteAnim>().PlayAnimation(0, 0.05f);
-
-            }
         }
 
         if (!LeftKeyActive && !RightKeyActive)
         {
-            Player.GetComponent<SpriteAnim>().StopAnimation();
+            Anim.StopAnimation();
         }
 
         if (Input.GetKeyDown(JumpButton) && CanJump)
         {
             CanJump = false;
             Debug.Log("Jumping!");
-            Player.GetComponent<SpriteAnim>().StopAnimation();
-            Player.GetComponent<SpriteRenderer>().sprite = JumpSprite;
+            Anim.StopAnimation();
+            PlayerRenderer.sprite = JumpSprite;
             PlayerRigid.AddRelativeForce(new Vector2(0, JumpForce));
+        }
+
+        if (Left.Collided())
+        {
+            LeftMovementActive = false;
+        } else
+        {
+            LeftMovementActive = true;
+        }
+
+        if (Right.Collided())
+        {
+            RightMovementActive = false;
+        } else
+        {
+            RightMovementActive = true;
         }
     }
 
@@ -128,13 +153,24 @@ public class Control : MonoBehaviour
         var dif = collision.collider.transform.position - Player.transform.position;
         var distance = dif.magnitude;
         var direction = dif / distance;
+        /*For my sanity:
+         Left : X = -0.9~
+         Right : X = 0.9~
+         Up : Y = 0.9~
+         Down: Y = Bellow 0
+        */
+        Debug.Log("Collision direction: y = " + direction.y + " | x = " + direction.x);
         if (direction.y < 0)
         {
             if (collision.collider.tag == "Ground")
             {
+                if (LeftKeyActive || RightKeyActive)
+                {
+                    Anim.PlayAnimation(0, 0.05f);
+                }
                 MovementActive = true;
-                Debug.Log("Entered collision with ground. Y,X=" + direction.y + " - " + direction.x);
-                Player.GetComponent<SpriteRenderer>().sprite = NormalSprite;
+                WalkAnimActive = true;
+                PlayerRenderer.sprite = NormalSprite;
                 Debug.Log("Changed sprite to: NormalSprite");
                 CanJump = true;
                 Debug.Log("CanJump set to true");
@@ -145,7 +181,6 @@ public class Control : MonoBehaviour
 
     private void OnCollisionStay2D(Collision2D collision)
     {
-        WalkAnimActive = true;
         var dif = collision.collider.transform.position - Player.transform.position;
         var distance = dif.magnitude;
         var direction = dif / distance;

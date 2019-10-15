@@ -1,12 +1,12 @@
 ﻿using UnityEngine;
 using System;
 using System.Collections;
-using UnityEngine.UI;
 
 public class SpriteAnim : MonoBehaviour
 {
     public GameObject AnimatedGameObject;
     public AnimSpriteSet[] AnimationSets;
+    private bool AnimActive = false;
     private int Cur_SpriteID;
     private float SecsPerFrame = 0.25f;
 
@@ -24,6 +24,11 @@ public class SpriteAnim : MonoBehaviour
         }
     }
 
+    public bool Active()
+    {
+        return AnimActive;
+    }
+
     public void StopAnimation()
     {
         StopCoroutine("AnimateSprite");
@@ -34,6 +39,7 @@ public class SpriteAnim : MonoBehaviour
         switch (ID)
         {
             default:
+                AnimActive = true;
                 yield return new WaitForSeconds(SecsPerFrame);
                 AnimatedGameObject.GetComponent<SpriteRenderer>().sprite
                 = AnimationSets[ID].Anim_Sprites[Cur_SpriteID];
@@ -42,6 +48,7 @@ public class SpriteAnim : MonoBehaviour
                 {
                     Cur_SpriteID = 0;
                 }
+                AnimActive = false;
                 StartCoroutine("AnimateSprite", ID);
                 break;
         }
