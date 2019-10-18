@@ -4,6 +4,7 @@
 - Refractor Player rigidbody look ups (Should increase performance since it'll avoid constant look ups)
   Idea: Look it up once at the start then store it in a variable.
 */
+using UnityEngine.UI;
 using UnityEngine;
 
 public class Control : MonoBehaviour
@@ -151,7 +152,6 @@ public class Control : MonoBehaviour
         if (Input.GetKeyDown(JumpButton) && CanJump)
         {
             CanJump = false;
-            Debug.Log("Jumping!");
             Anim.StopAnimation();
             PlayerRenderer.sprite = JumpSprite;
             PlayerRigid.AddRelativeForce(new Vector2(0, JumpForce));
@@ -186,7 +186,6 @@ public class Control : MonoBehaviour
          Up : Y = 0.9~
          Down: Y = Bellow 0
         */
-        Debug.Log("Collision direction: y = " + direction.y + " | x = " + direction.x);
         if (direction.y < 0)
         {
             if (collision.collider.tag == "Ground")
@@ -198,10 +197,7 @@ public class Control : MonoBehaviour
                 MovementActive = true;
                 WalkAnimActive = true;
                 PlayerRenderer.sprite = NormalSprite;
-                Debug.Log("Changed sprite to: NormalSprite");
                 CanJump = true;
-                Debug.Log("CanJump set to true");
-
             }
         } 
     }
