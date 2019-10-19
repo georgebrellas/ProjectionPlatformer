@@ -200,6 +200,13 @@ public class Control : MonoBehaviour
                 CanJump = true;
             }
         } 
+
+        if (collision.collider.tag == "Baddie")
+        {
+            Anim.StopAnimation();
+            PlayerRenderer.sprite = JumpSprite;
+            PlayerRigid.AddRelativeForce(new Vector2(0, 100));
+        }
     }
 
     private void OnCollisionStay2D(Collision2D collision)

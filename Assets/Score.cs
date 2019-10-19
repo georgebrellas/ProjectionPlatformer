@@ -10,8 +10,8 @@ public class Score : MonoBehaviour
 
     void Start()
     {
-        ScoreText = this.GetComponentInParent<Text>();
-        ScoreNum = int.Parse(this.GetComponentInParent<Text>().text);
+        ScoreText = GetComponentInParent<Text>();
+        ScoreNum = int.Parse(GetComponentInParent<Text>().text);
     }
 
     public void UpdateScore(int AddedScore)
