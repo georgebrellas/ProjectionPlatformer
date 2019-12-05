@@ -1,8 +1,7 @@
 ﻿/*Character Control Script - Georgios Brellas 2019
 @TODO: 
 - Move physics related code into FixedUpdate
-- Refractor Player rigidbody look ups (Should increase performance since it'll avoid constant look ups)
-  Idea: Look it up once at the start then store it in a variable.
+
 */
 using UnityEngine.UI;
 using UnityEngine;
@@ -47,6 +46,9 @@ public class Control : MonoBehaviour
     private bool LeftMovementActive;
     private bool RightMovementActive;
     private bool Sprint;
+    //Joystick
+    private bool JoyLeftActive;
+    private bool JoyRightActive; 
 
     // Start is called before the first frame update
     void Start()
@@ -67,37 +69,42 @@ public class Control : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (Input.GetAxis("Horizontal") <= -0.9) {
+            JoyLeftActive = true;
+        } else
+        {
+            JoyLeftActive = false;
+        }
+        if (Input.GetAxis("Horizontal") >= 0.9)
+        {
+            JoyRightActive = true;
+        } else
+        {
+            JoyRightActive = false;
+        }
+
         if (Input.GetKeyDown(SprintButton))
         {
             MovementSpeed = SetSpeed + SprintBoost;
-            if (WalkAnimActive)
-            {
-                Anim.StopAnimation();
-                Anim.PlayAnimation(0, 0.03f);
-            }
         }
         
         if (Input.GetKeyUp(SprintButton))
         {
             MovementSpeed = SetSpeed;
-
-            if (WalkAnimActive)
-            {
-                Anim.StopAnimation();
-                Anim.PlayAnimation(0, AnimSpeed);
-            }
         }
 
-        PlayerRigid.velocity = new Vector2(Mathf.Clamp(PlayerRigid.velocity.x, -MovementSpeed, MovementSpeed), Mathf.Clamp(PlayerRigid.velocity.y, -JumpForce, JumpForce));
-        
-        if (Input.GetKeyDown(LeftButton) || Input.GetKeyDown(RightButton))
+        if (LeftKeyActive || RightKeyActive)
         {
-            if (WalkAnimActive)
+            if (WalkAnimActive && !Anim.Active())
             {
+                Debug.Log("AnimStart");
                 Anim.PlayAnimation(0, AnimSpeed);
             }
         }
-        if (Input.GetKey(LeftButton))
+
+        PlayerRigid.velocity = new Vector2(Mathf.Clamp(PlayerRigid.velocity.x, -MovementSpeed, MovementSpeed), Mathf.Clamp(PlayerRigid.velocity.y, -9999, 6));
+        
+        if (Input.GetKey(LeftButton) || JoyLeftActive)
         {
             LeftKeyActive = true;
             if (MovementActive && LeftMovementActive)
@@ -107,9 +114,13 @@ public class Control : MonoBehaviour
 
             //Flips the sprite so that it reflects the direction the player is facing.
             PlayerRenderer.flipX = true;
+        } else
+        {
+            LeftKeyActive = false;
         }
         
-        if (Input.GetKey(RightButton))
+
+        if (Input.GetKey(RightButton) || JoyRightActive)
         {
             RightKeyActive = true;
             if (MovementActive && RightMovementActive)
@@ -119,42 +130,30 @@ public class Control : MonoBehaviour
 
             //Flips the sprite so that it reflects the direction the player is facing.
             PlayerRenderer.flipX = false;
-        }
-
-
-        if (Input.GetKeyUp(LeftButton) || Input.GetKeyUp(RightButton))
-        {
-            //Stops the player from moving (sliding due to physics)
-            PlayerRigid.velocity = new Vector2(0, PlayerRigid.velocity.y);
-
-            if (CanJump)
-            {
-                PlayerRenderer.sprite = NormalSprite;
-            }
-
-        }
-        
-        if (Input.GetKeyUp(LeftButton))
-        {
-            LeftKeyActive = false;
-        }
-
-        if (Input.GetKeyUp(RightButton))
+        } else
         {
             RightKeyActive = false;
         }
 
         if (!LeftKeyActive && !RightKeyActive)
         {
-            Anim.StopAnimation();
-        }
+            //Stops the player from moving (sliding due to physics)
+            Anim.Stop();
+            PlayerRigid.velocity = new Vector2(0, PlayerRigid.velocity.y);
 
-        if (Input.GetKeyDown(JumpButton) && CanJump)
+            if (CanJump)
+            {
+                PlayerRenderer.sprite = NormalSprite;
+            }
+        } 
+
+        if ((Input.GetKeyDown(JumpButton) || Input.GetButton("Jump")) && CanJump)
         {
+            Anim.Stop();
+            WalkAnimActive = false;
             CanJump = false;
-            Anim.StopAnimation();
             PlayerRenderer.sprite = JumpSprite;
-            PlayerRigid.AddRelativeForce(new Vector2(0, JumpForce));
+            PlayerRigid.AddForce(new Vector2(0, JumpForce));
         }
 
         if (Left.Collided())
@@ -176,49 +175,19 @@ public class Control : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        //This is basically just a way to figure out the direction the collider is relative to us.
-        var dif = collision.collider.transform.position - Player.transform.position;
-        var distance = dif.magnitude;
-        var direction = dif / distance;
-        /*For my sanity:
-         Left : X = -0.9~
-         Right : X = 0.9~
-         Up : Y = 0.9~
-         Down: Y = Bellow 0
-        */
-        if (direction.y < 0)
+        if (collision.collider.tag == "Ground")
         {
-            if (collision.collider.tag == "Ground")
-            {
-                if (LeftKeyActive || RightKeyActive)
-                {
-                    Anim.PlayAnimation(0, AnimSpeed);
-                }
-                MovementActive = true;
-                WalkAnimActive = true;
-                PlayerRenderer.sprite = NormalSprite;
-                CanJump = true;
-            }
-        } 
+            Debug.Log("Collided");
+            WalkAnimActive = true;
+            MovementActive = true;
+            PlayerRenderer.sprite = NormalSprite;
+            CanJump = true;
+        }
 
         if (collision.collider.tag == "Baddie")
         {
-            Anim.StopAnimation();
             PlayerRenderer.sprite = JumpSprite;
-            PlayerRigid.AddRelativeForce(new Vector2(0, 100));
+            PlayerRigid.AddForce(new Vector2(0, JumpForce));
         }
-    }
-
-    private void OnCollisionStay2D(Collision2D collision)
-    {
-        var dif = collision.collider.transform.position - Player.transform.position;
-        var distance = dif.magnitude;
-        var direction = dif / distance;
-    }
-
-    private void OnCollisionExit2D(Collision2D collision)
-    {
-        WalkAnimActive = false;
-        MovementActive = true;
     }
 }

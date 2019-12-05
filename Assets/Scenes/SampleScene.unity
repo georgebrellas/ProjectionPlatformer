@@ -3230,8 +3230,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Mob: {fileID: 2579287706746838477, guid: f1e5ce687e289ca42947843e19989ea2, type: 3}
-  SpawnRate: 8
-  SpawnDelay: 0
+  SpawnRate: 7
+  SpawnDelay: 2
 --- !u!4 &604193494
 Transform:
   m_ObjectHideFlags: 0
@@ -4784,8 +4784,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Mob: {fileID: 2933978669501782530, guid: a3fbb093a722f184292cb0069b315be2, type: 3}
-  SpawnRate: 8
-  SpawnDelay: 0
+  SpawnRate: 5
+  SpawnDelay: 1
 --- !u!4 &912512081
 Transform:
   m_ObjectHideFlags: 0
@@ -7473,8 +7473,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   Mob: {fileID: 2579287706746838477, guid: f1e5ce687e289ca42947843e19989ea2, type: 3}
-  SpawnRate: 8
-  SpawnDelay: 1
+  SpawnRate: 0
+  SpawnDelay: 0
 --- !u!4 &1638258835
 Transform:
   m_ObjectHideFlags: 0

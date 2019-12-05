@@ -66,7 +66,7 @@ public class SlimeMovement : MonoBehaviour
                 if (!Dead)
                 {
                     GetComponent<BoxCollider2D>().size = new Vector2(GetComponent<BoxCollider2D>().size.x, 0.1850187f);
-                    GetComponentInParent<SpriteAnim>().StopAnimation();
+                    GetComponentInParent<SpriteAnim>().Stop();
                     GameObject.Find("Score").GetComponent<Score>().UpdateScore(50);
                     Dead = true;
                     DeathStart = Time.time;

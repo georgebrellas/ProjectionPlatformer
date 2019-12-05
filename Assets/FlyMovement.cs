@@ -60,7 +60,7 @@ public class FlyMovement : MonoBehaviour
             {
                 if (!Dead)
                 {
-                    GetComponentInParent<SpriteAnim>().StopAnimation();
+                    GetComponentInParent<SpriteAnim>().Stop();
                     GameObject.Find("Score").GetComponent<Score>().UpdateScore(100);
                     Dead = true;
                     DeathStart = Time.time;

@@ -29,9 +29,10 @@ public class SpriteAnim : MonoBehaviour
         return AnimActive;
     }
 
-    public void StopAnimation()
+    public void Stop()
     {
         StopCoroutine("AnimateSprite");
+        AnimActive = false;
     }
 
     IEnumerator AnimateSprite(int ID)
@@ -48,7 +49,6 @@ public class SpriteAnim : MonoBehaviour
                 {
                     Cur_SpriteID = 0;
                 }
-                AnimActive = false;
                 StartCoroutine("AnimateSprite", ID);
                 break;
         }
